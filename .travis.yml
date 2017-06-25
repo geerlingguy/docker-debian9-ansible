@@ -20,10 +20,10 @@ script:
 
   # Test running the container.
   - >
-    docker run --name test-container
-      --detach --privileged
-      --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro
-      geerlingguy/docker-debian9-ansible:latest
+    docker run --name test-container \
+      --detach --privileged \
+      --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro \
+      geerlingguy/docker-debian9-ansible:latest \
       /lib/systemd/systemd
 
   # Verify Ansible is available in the container.
