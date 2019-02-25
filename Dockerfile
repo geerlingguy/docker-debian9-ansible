@@ -1,29 +1,31 @@
 FROM debian:stretch
-LABEL maintainer="Jeff Geerling"
+LABEL maintainer="midacts"
 
-ENV DEBIAN_FRONTEND noninteractive
-
-ENV pip_packages "ansible cryptography"
-
-# Install dependencies.
+# Install dependencies
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
-       sudo systemd \
-       build-essential libffi-dev libssl-dev \
+       apt-transport-https build-essential ca-certificates curl \
+       gnupg2 libffi-dev libssl-dev nano \
        python-pip python-dev python-setuptools python-wheel \
+       software-properties-common sudo systemd \ 
+
+# Docker prereq
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
+    && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
+    && apt-get update
+
+# Docker install
+RUN apt-get install docker-ce -y \
     && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
     && apt-get clean
 
-# Install Ansible via pip.
+# Install Ansible via pip
+ENV pip_packages "ansible ansible-lint cryptography docker flake8 molecule testinfra virtualenv yamllint"
 RUN pip install $pip_packages
 
-COPY initctl_faker .
-RUN chmod +x initctl_faker && rm -fr /sbin/initctl && ln -s /initctl_faker /sbin/initctl
-
-# Install Ansible inventory file.
+# Install Ansible inventory file
 RUN mkdir -p /etc/ansible
 RUN echo "[local]\nlocalhost ansible_connection=local" > /etc/ansible/hosts
-
-VOLUME ["/sys/fs/cgroup"]
 CMD ["/lib/systemd/systemd"]

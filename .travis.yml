@@ -2,16 +2,40 @@
 services: docker
 
 before_install:
-  # Upgrade Docker.
+  # Upgrade Docker
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
-script:
-  # Test building Dockerfile.
-  - docker build -t docker-ansible .
+jobs:
+  include:
+    - stage: Build docker image
+      script:
+      # Build the Dockerfile
+      - docker build -t docker-ansible .
 
-  # Test running the container.
-  - docker run --name test-container -d --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro docker-ansible
+    - stage: Test the docker image
+      script:
+      # Test running the container
+      - docker run --name test-container -d --privileged -v /var/run/docker.sock:/var/run/docker.sock docker-ansible
 
-  # Verify Ansible is available in the container.
-  - docker exec --tty test-container env TERM=xterm ansible --version
+      # Verifies Docker is installed
+      - docker exec --tty test-container env TERM=xterm docker --version
+
+      # Verifies Python is installed
+      - docker exec --tty test-container env TERM=xterm python --version
+
+      # Verifies Ansible is installed
+      - docker exec --tty test-container env TERM=xterm ansible --version
+
+      # Verifies Molecule is installed
+      - docker exec --tty test-container env TERM=xterm molecule --version
+
+      # Verifies virtualenv is installed
+      - docker exec --tty test-container env TERM=xterm virtualenv --version
+
+    - stage: Pushes the latest docker image
+      script:
+      # Pushes the docker image to Docker Hub
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker tag docker-ansible $DOCKER_USERNAME/docker-ansible
+      - docker push $DOCKER_USERNAME/docker-ansible
