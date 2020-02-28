@@ -13,9 +13,7 @@ RUN apt-get update \
        python-pip python-dev python-setuptools python-wheel \
     && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
-    && apt-get clean \
-    && wget https://bootstrap.pypa.io/get-pip.py \
-    && python get-pip.py
+    && apt-get clean
 
 # Install Ansible via pip.
 RUN pip install $pip_packages
