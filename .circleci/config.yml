@@ -1,0 +1,21 @@
+version: 2.1
+jobs:
+  build:
+    machine:
+      image: ubuntu-1604:202004-01
+    steps:
+      - checkout
+      - run:
+          name: Build dockerfile
+          command: docker build -t docker-ansible .
+      - run:
+          name: Run a container
+          command: docker run --name test-container -d --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro docker-ansible
+      - run:
+          name: Verify Ansible is available in the container.
+          command: docker exec --tty test-container env TERM=xterm ansible --version
+workflows:
+  version: 2
+  all-tests:
+    jobs:
+      - build

@@ -1,9 +1,9 @@
-FROM debian:stretch
-LABEL maintainer="Jeff Geerling"
+FROM debian:stretch-20200908
+LABEL maintainer="Michael Lynch"
+
+ARG ANSIBLE_VERSION="2.9.13"
 
 ENV DEBIAN_FRONTEND noninteractive
-
-ENV pip_packages "ansible cryptography"
 
 # Install dependencies.
 RUN apt-get update \
@@ -15,8 +15,7 @@ RUN apt-get update \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
     && apt-get clean
 
-# Install Ansible via pip.
-RUN pip install $pip_packages
+RUN pip install cryptography "ansible==${ANSIBLE_VERSION}"
 
 COPY initctl_faker .
 RUN chmod +x initctl_faker && rm -fr /sbin/initctl && ln -s /initctl_faker /sbin/initctl
